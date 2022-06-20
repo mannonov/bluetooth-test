@@ -5,4 +5,5 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="bluetooth_turned_off_alert">Bluetooth is turned off. Please turn Bluetooth on then come back to the app.</string>
     <string name="no_devices_found">No paired Bluetooth devices found!</string>
+    <string name="print">Print</string>
 </resources>

@@ -1,6 +1,8 @@
 package uz.newtech.bluetoothtest.ui.fragment
 
+import android.bluetooth.BluetoothDevice
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
@@ -9,6 +11,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import uz.newtech.bluetoothtest.R
 import uz.newtech.bluetoothtest.adapter.BTDeviceAdapter
+import uz.newtech.bluetoothtest.core.Constants.APP_TAG
 import uz.newtech.bluetoothtest.data.BTClient
 import uz.newtech.bluetoothtest.databinding.FragmentChooseDeviceBinding
 import javax.inject.Inject
@@ -18,6 +21,7 @@ class ChooseDeviceFragment : Fragment(R.layout.fragment_choose_device) {
 
     private val binding: FragmentChooseDeviceBinding by viewBinding(FragmentChooseDeviceBinding::bind)
     private var adapter: BTDeviceAdapter? = null
+    private var choosenDevice: BluetoothDevice? = null
 
     @Inject
     lateinit var client: BTClient
@@ -36,10 +40,21 @@ class ChooseDeviceFragment : Fragment(R.layout.fragment_choose_device) {
         binding.selectBt.setAdapter(adapter)
         binding.selectBt.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
-                binding.btnConnect.isEnabled = true
+                binding.btnPrint.isEnabled = true
+                choosenDevice = adapter?.getItem(position)
             }
-
+        client.checkRequiredBluetoothPermissions(requireActivity())
         updateBluetoothDevices()
+
+        binding.btnPrint.setOnClickListener {
+            Log.d(APP_TAG, "onViewCreated: $choosenDevice")
+            choosenDevice?.let { it1 ->
+                client.immediatePrintToDevice(
+                    it1,
+                    binding.edtContent.text.toString()
+                )
+            }
+        }
 
     }
 
