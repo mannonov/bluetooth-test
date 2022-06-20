@@ -1,15 +1,11 @@
 package uz.newtech.bluetoothtest.data
 
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
-import android.os.Build
-import androidx.core.app.ActivityCompat
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -21,7 +17,7 @@ class BTClient(private val context: Context) {
     private val socketConnections: MutableMap<String, ConnectedThread> = mutableMapOf()
     private val defaultUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb")
     private var defaultBluetoothAdapter: BluetoothAdapter? = null
-    private val RC_PERMISSION_FOR_DISCOVERY = 712
+
 
     @SuppressLint("MissingPermission")
     fun getPairedDevicesInfo(): List<BluetoothDevice>? {
@@ -76,6 +72,7 @@ class BTClient(private val context: Context) {
                 }
             }
         }
+
         fun isConnected(): Boolean {
             return mmIsConnected.get()
         }
@@ -86,6 +83,7 @@ class BTClient(private val context: Context) {
             } catch (e: IOException) {
             }
         }
+
         fun close() {
             mmSocket.close()
             mmIsConnected.set(false)
@@ -117,23 +115,6 @@ class BTClient(private val context: Context) {
         return socket
     }
 
-    private val mRequiredPermissions = arrayOf(
-        Manifest.permission.BLUETOOTH
-    )
-
-    fun checkRequiredBluetoothPermissions(context: Activity) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val grants = mRequiredPermissions.map { context.isGranted(it) }
-            if (grants.any { !it }) {
-                ActivityCompat.requestPermissions(
-                    context,
-                    mRequiredPermissions,
-                    RC_PERMISSION_FOR_DISCOVERY
-                )
-                return
-            }
-        }
-    }
 
     fun immediatePrintToDevice(device: BluetoothDevice, message: String) {
         connectToDevice(device, true)

@@ -6,15 +6,16 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import uz.newtech.bluetoothtest.R
 import uz.newtech.bluetoothtest.adapter.BTDeviceAdapter
 import uz.newtech.bluetoothtest.core.Constants.APP_TAG
-import uz.newtech.bluetoothtest.data.BTClient
+import uz.newtech.bluetoothtest.data.checkRequiredBluetoothPermissions
 import uz.newtech.bluetoothtest.databinding.FragmentChooseDeviceBinding
-import javax.inject.Inject
+import uz.newtech.bluetoothtest.viewmodel.PrintViewModel
 
 @AndroidEntryPoint
 class ChooseDeviceFragment : Fragment(R.layout.fragment_choose_device) {
@@ -23,8 +24,7 @@ class ChooseDeviceFragment : Fragment(R.layout.fragment_choose_device) {
     private var adapter: BTDeviceAdapter? = null
     private var choosenDevice: BluetoothDevice? = null
 
-    @Inject
-    lateinit var client: BTClient
+    private val viewModel by viewModels<PrintViewModel>()
 
     private val bluetoothOffAlertDialog = lazy {
         MaterialAlertDialogBuilder(requireContext())
@@ -43,13 +43,17 @@ class ChooseDeviceFragment : Fragment(R.layout.fragment_choose_device) {
                 binding.btnPrint.isEnabled = true
                 choosenDevice = adapter?.getItem(position)
             }
-        client.checkRequiredBluetoothPermissions(requireActivity())
-        updateBluetoothDevices()
+        requireActivity().checkRequiredBluetoothPermissions()
+        viewModel.getPairedDevicesInfo()
+        viewModel.pairedDevicesInfoLiveData.observe(
+            viewLifecycleOwner,
+            this::updateBluetoothDevices
+        )
 
         binding.btnPrint.setOnClickListener {
             Log.d(APP_TAG, "onViewCreated: $choosenDevice")
             choosenDevice?.let { it1 ->
-                client.immediatePrintToDevice(
+                viewModel.printContent(
                     it1,
                     binding.edtContent.text.toString()
                 )
@@ -58,9 +62,8 @@ class ChooseDeviceFragment : Fragment(R.layout.fragment_choose_device) {
 
     }
 
-    private fun updateBluetoothDevices() {
-        var devicesInfo = client.getPairedDevicesInfo()
-
+    private fun updateBluetoothDevices(list: List<BluetoothDevice>?) {
+        var devicesInfo = list
         if (devicesInfo == null) {
             bluetoothOffAlertDialog.value.show()
             devicesInfo = emptyList()
