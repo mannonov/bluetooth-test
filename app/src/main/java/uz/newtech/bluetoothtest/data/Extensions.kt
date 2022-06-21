@@ -34,7 +34,9 @@ fun <T> MutableLiveData<List<T>>.mutateList(block: MutableList<T>.() -> Unit) {
 
 
 private val mRequiredPermissions = arrayOf(
-    Manifest.permission.BLUETOOTH
+    Manifest.permission.BLUETOOTH,
+    Manifest.permission.BLUETOOTH_CONNECT,
+    Manifest.permission.BLUETOOTH_ADMIN
 )
 
 fun FragmentActivity.checkRequiredBluetoothPermissions() {
